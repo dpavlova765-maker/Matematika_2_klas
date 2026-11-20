@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор на работни листи по математика – 2. клас</title>
+<style>
+  :root {
+    --blue: #315b86;
+    --line: #c8d6e2;
+    --pale: #edf4fa;
+    --grid-color: #dce5ed;
+    --grid-size: 18px;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #f1f4f8;
+    color: #26364a;
+    font-family: Arial, sans-serif;
+  }
+  .controls {
+    max-width: 900px;
+    margin: 0 auto 22px;
+    padding: 22px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  }
+  h1 {
+    text-align: center;
+    color: var(--blue);
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    text-align: center;
+    margin: 0 0 20px;
+    font-weight: bold;
+    color: #48627c;
+  }
+  .settings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .settings .full-span {
+    grid-column: span 2;
+  }
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #b9c9d8;
+    border-radius: 7px;
+    font-size: 15px;
+    background: white;
+    color: #26364a;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 17px;
+  }
+  button {
+    border: 0;
+    border-radius: 8px;
+    padding: 12px 17px;
+    font-size: 15px;
+    cursor: pointer;
+    background: #3679b9;
+    color: white;
+    transition: filter 0.15s ease;
+  }
+  button:hover {
+    filter: brightness(0.92);
+  }
+  button.green {
+    background: #39865c;
+  }
+  button.gray {
+    background: #687887;
+  }
+  .tip {
+    font-size: 13px;
+    color: #55687a;
+    margin: 12px 0 0;
+    background: #f5f9fc;
+    padding: 9px 12px;
+    border-radius: 7px;
+    border-left: 3px solid #3679b9;
+  }
+
+  /* Квадратна мрежа */
+  .grid-bg {
+    background-color: #fff;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+
+  /* Работен лист и лист с отговори */
+  #worksheet, #answerSheet {
+    max-width: 850px;
+    margin: 0 auto 22px;
+    padding: 18px 22px;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+  .paper-head {
+    text-align: center;
+    border-bottom: 2px solid #789bb9;
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+  }
+  .paper-head h2 {
+    color: var(--blue);
+    margin: 1px;
+    font-size: 19px;
+  }
+  .paper-head p {
+    margin: 2px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .name-row {
+    display: flex;
+    gap: 24px;
+    margin: 8px 0 10px;
+    font-size: 14.5px;
+  }
+  .name-row span {
+    flex: 1;
+    border-bottom: 1px solid #333;
+    padding-bottom: 3px;
+  }
+  .task-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 15.5px;
+    font-weight: bold;
+    margin: 9px 0 5px;
+    color: #1f3347;
+  }
+  .task-pts {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--blue);
+    background: var(--pale);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+  .exercises {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    align-items: stretch;
+  }
+  .exercise {
+    position: relative;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 18.5px;
+    font-weight: bold;
+    border: 1px solid #aebfd0;
+    padding: 4px 10px;
+  }
+  .item-pts {
+    position: absolute;
+    top: 3px;
+    right: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #56708a;
+    line-height: 1;
+    padding: 1px 3px;
+    border-radius: 3px;
+  }
+  .exercise.bracket-exercise,
+  .exercise.unknown-exercise {
+    min-height: 82px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    padding: 6px 14px;
+  }
+  .bracket-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-right: 24px;
+  }
+  .bracket-top .expr-edit {
+    text-align: left;
+    padding-left: 2px;
+  }
+  .bracket-step1, .bracket-step2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 17.5px;
+    color: #26364a;
+  }
+  .step-line {
+    flex: 1;
+    max-width: 155px;
+    height: 18px;
+    border-bottom: 1.5px solid #6b88a4;
+  }
+  .expr-edit {
+    padding: 2px 6px;
+    border-radius: 5px;
+    min-width: 85px;
+    text-align: right;
+    outline: none;
+    transition: background-color 0.15s, box-shadow 0.15s;
+  }
+  .expr-edit.unknown-expr {
+    text-align: left;
+    padding-left: 2px;
+    min-width: 145px;
+  }
+  .expr-edit:hover, .problem-box:hover, .geo-desc:hover, .item-pts:hover, .task-pts:hover, [contenteditable="true"]:hover {
+    background-color: rgba(54, 121, 185, 0.12);
+    cursor: text;
+  }
+  .expr-edit:focus, .problem-box:focus, .geo-desc:focus, .item-pts:focus, .task-pts:focus, [contenteditable="true"]:focus {
+    background-color: #fffbe6;
+    box-shadow: 0 0 0 2px #3679b9;
+    outline: none;
+  }
+  .answer-box {
+    display: inline-block;
+    width: 32px;
+    height: 25px;
+    border: 1.5px solid var(--blue);
+    vertical-align: middle;
+    background: rgba(255, 255, 255, 0.85);
+    flex-shrink: 0;
+  }
+
+  /* Геометрична задача (Задача 2) */
+  .geometry-container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    border: 1px solid #aebfd0;
+    padding: 8px 10px;
+    background: #fff;
+  }
+  .geo-diagram {
+    flex: 0 0 162px;
+    width: 162px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px dashed #c8d6e2;
+    padding-right: 10px;
+    background: #fff;
+  }
+  .geo-diagram svg {
+    display: block;
+    max-width: 152px;
+    height: auto;
+  }
+  .geo-work {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border: 1px solid #c3d1df;
+  }
+  .geo-desc {
+    font-size: 14.5px;
+    margin-bottom: 4px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1.35;
+    background: rgba(255, 255, 255, 0.72);
+  }
+  .geo-lines .work-line {
+    height: 18px;
+    border-bottom: 1px solid #9aabba;
+  }
+  .geo-answer-line {
+    margin-top: 4px;
+    font-size: 14.5px;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 1px 4px;
+  }
+
+  /* Текстова задача (Задача 3) */
+  .problem-box {
+    padding: 7px 11px;
+    min-height: 46px;
+    border: 1px solid #aebfd0;
+    line-height: 1.45;
+    font-size: 14.5px;
+    transition: background-color 0.15s, box-shadow 0.15s;
+  }
+  .problem-split {
+    display: grid;
+    grid-template-columns: 42% 1fr;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .short-record-box, .solution-box {
+    border: 1px solid #aebfd0;
+    padding: 6px 9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 108px;
+  }
+  .box-label {
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #1f3347;
+    background: rgba(255, 255, 255, 0.78);
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 3px;
+    align-self: flex-start;
+  }
+  .work-lines {
+    margin-top: 2px;
+  }
+  .work-line {
+    height: 18px;
+    border-bottom: 1px solid #9aabba;
+  }
+  .answer-line {
+    margin-top: 4px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.78);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* Самооценка */
+  .reflection {
+    margin-top: 9px;
+    border: 2px dashed #82a7c7;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+  .reflection h3 {
+    color: var(--blue);
+    margin: 0 0 2px;
+    font-size: 14px;
+  }
+  .reflection p {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12.5px;
+  }
+
+  /* Компактна скала за качествено оценяване под рефлексията */
+  .grading-scale {
+    margin-top: 6px;
+    padding: 5px 9px;
+    background: #f5f9fc;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11.5px;
+    line-height: 1.3;
+  }
+  .scale-bands {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    color: #314860;
+  }
+  .scale-bands b {
+    color: var(--blue);
+  }
+  .scale-score {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    color: #1f3347;
+    white-space: nowrap;
+  }
+  .score-box {
+    display: inline-block;
+    min-width: 34px;
+    height: 17px;
+    border-bottom: 1.5px solid var(--blue);
+    text-align: center;
+  }
+  .qual-box {
+    display: inline-block;
+    min-width: 96px;
+    height: 17px;
+    border-bottom: 1.5px solid var(--blue);
+    text-align: center;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 6px;
+    color: #718397;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .author-sign {
+    font-style: italic;
+    color: #48627c;
+    font-weight: bold;
+  }
+
+  /* Лист с отговори */
+  #answerSheet {
+    display: none;
+  }
+  #answerSheet h2 {
+    color: var(--blue);
+    text-align: center;
+    margin-top: 0;
+  }
+  .answer-list {
+    columns: 2;
+    line-height: 1.85;
+  }
+  .problem-answer {
+    margin-top: 12px;
+    padding: 11px 13px;
+    background: var(--pale);
+    border-radius: 6px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 650px) {
+    body {
+      padding: 8px;
+    }
+    .settings {
+      grid-template-columns: 1fr;
+    }
+    .settings .full-span {
+      grid-column: span 1;
+    }
+    #worksheet, #answerSheet {
+      padding: 14px;
+    }
+    .exercise {
+      min-height: 36px;
+      font-size: 17px;
+      padding: 2px 6px;
+    }
+    .exercise.bracket-exercise,
+    .exercise.unknown-exercise {
+      min-height: 74px;
+      padding: 4px 10px;
+    }
+    .bracket-step1, .bracket-step2 {
+      font-size: 16.5px;
+    }
+    .step-line {
+      height: 15px;
+    }
+    .answer-box {
+      width: 28px;
+      height: 22px;
+    }
+    .geometry-container {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .geo-diagram {
+      flex: none;
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px dashed #c8d6e2;
+      padding-right: 0;
+      padding-bottom: 8px;
+    }
+    .problem-split {
+      grid-template-columns: 1fr;
+    }
+    .grading-scale {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media print {
+    body {
+      background: white;
+      padding: 0;
+      margin: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .controls {
+      display: none !important;
+    }
+    #worksheet, #answerSheet {
+      box-shadow: none;
+      margin: 0;
+      width: 100%;
+      max-width: none;
+      padding: 1.5mm 3mm;
+    }
+    #worksheet {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    .paper-head {
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+    }
+    .paper-head h2 {
+      font-size: 17px;
+    }
+    .paper-head p {
+      font-size: 12.5px;
+    }
+    .name-row {
+      margin: 4px 0 6px;
+      font-size: 13px;
+    }
+    .task-title {
+      font-size: 14.5px;
+      margin: 5px 0 3px;
+    }
+    .task-pts {
+      font-size: 11.5px;
+      padding: 0 6px;
+    }
+    .exercises {
+      gap: 4px;
+    }
+    .exercise {
+      min-height: 36px;
+      font-size: 16.5px;
+      padding: 2px 6px;
+    }
+    .exercise.bracket-exercise,
+    .exercise.unknown-exercise {
+      min-height: 66px;
+      padding: 3px 10px;
+    }
+    .item-pts {
+      font-size: 10px;
+      top: 2px;
+      right: 5px;
+    }
+    .answer-box {
+      width: 27px;
+      height: 21px;
+    }
+    .geometry-container {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: stretch !important;
+      gap: 10px;
+      padding: 5px 8px;
+    }
+    .geo-diagram {
+      flex: 0 0 148px !important;
+      width: 148px !important;
+      border-right: 1px dashed #c8d6e2 !important;
+      border-bottom: none !important;
+      padding-right: 8px !important;
+      padding-bottom: 0 !important;
+    }
+    .geo-diagram svg {
+      max-width: 140px;
+      max-height: 86px;
+    }
+    .geo-desc {
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .geo-lines .work-line {
+      height: 18px;
+    }
+    .geo-answer-line {
+      margin-top: 2px;
+      font-size: 13px;
+    }
+    .problem-box {
+      padding: 5px 8px;
+      min-height: 36px;
+      font-size: 13.5px;
+      line-height: 1.35;
+    }
+    .problem-split {
+      margin-top: 4px;
+      gap: 6px;
+    }
+    .short-record-box, .solution-box {
+      padding: 4px 7px;
+      min-height: 92px;
+    }
+    .box-label {
+      font-size: 12px;
+    }
+    .work-line {
+      height: 18px;
+    }
+    .answer-line {
+      margin-top: 3px;
+      font-size: 13px;
+    }
+    .reflection {
+      margin-top: 6px;
+      padding: 4px 8px;
+    }
+    .reflection h3 {
+      font-size: 13px;
+      margin-bottom: 1px;
+    }
+    .reflection p {
+      font-size: 11.5px;
+      margin: 1px 0;
+    }
+    .choices {
+      font-size: 11.5px;
+      gap: 10px;
+    }
+    .grading-scale {
+      margin-top: 5px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      gap: 5px;
+    }
+    .scale-bands {
+      gap: 5px;
+    }
+    .footer {
+      margin-top: 4px;
+      font-size: 10px;
+    }
+    .author-sign {
+      color: #48627c !important;
+    }
+    #answerSheet {
+      display: block !important;
+      page-break-before: always;
+      break-before: page;
+    }
+    .expr-edit, .problem-box, .geo-desc, .item-pts, .task-pts, [contenteditable="true"] {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 5mm;
+    }
+  }
+</style>
+</head>
+<body>
+
+<section class="controls">
+  <h1>📚 Генератор на работни листи</h1>
+  <p class="subtitle">Математика – 2. клас</p>
+  <div class="settings">
+    <div class="full-span">
+      <label for="level">Вид на задачите за пресмятане (Задача 1)</label>
+      <select id="level">
+        <option value="mixed2">Смесени задачи (ляво: със скоби, дясно: без скоби)</option>
+        <option value="regroup100">Събиране и изваждане до 100 с преминаване</option>
+        <option value="brackets100">Числови изрази със скоби</option>
+        <option value="unknown100">Намиране на неизвестно число</option>
+      </select>
+    </div>
+    <div>
+      <label for="count">Брой задачи в Задача 1</label>
+      <select id="count">
+        <option>4</option>
+        <option>6</option>
+        <option selected>8</option>
+        <option>10</option>
+        <option>12</option>
+      </select>
+    </div>
+    <div>
+      <label for="ptsPerEx">Точки за всеки пример в Задача 1</label>
+      <select id="ptsPerEx">
+        <option value="1">1 т. на пример</option>
+        <option value="2" selected>2 т. на пример</option>
+        <option value="3">3 т. на пример</option>
+      </select>
+    </div>
+    <div>
+      <label for="geoType">Геометрична задача (Обиколка)</label>
+      <select id="geoType">
+        <option value="random">Различни фигури (случайно)</option>
+        <option value="triangle">Обиколка на триъгълник</option>
+        <option value="rectangle">Обиколка на правоъгълник</option>
+        <option value="square">Обиколка на квадрат</option>
+      </select>
+    </div>
+    <div>
+      <label for="theme">Тема на текстовата задача</label>
+      <select id="theme">
+        <option value="mixed">Различни теми (случайно)</option>
+        <option value="school">В училище</option>
+        <option value="nature">В природата</option>
+        <option value="animals">Животни</option>
+        <option value="sport">Спорт и игри</option>
+        <option value="fruit">Плодове</option>
+      </select>
+    </div>
+    <div class="full-span">
+      <label for="style">Оформление (квадратна мрежа)</label>
+      <select id="style">
+        <option value="classic">Класически квадратчета (18 мм)</option>
+        <option value="large">По-големи квадратчета (25 мм)</option>
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <button onclick="generate()">✨ Създай нов лист</button>
+    <button class="green" onclick="printAll()">🖨️ Печат на листа и отговорите</button>
+    <button class="gray" onclick="printWorksheet()">Печат само на работния лист</button>
+    <button class="gray" onclick="toggleAnswers()">Покажи/скрий отговорите</button>
+  </div>
+  <p class="tip">✏️ <b>Ръчно редактиране:</b> Кликни върху която и да е задача, условие или точки (<code>т.</code>), за да ги промениш ръчно. Точките, скалата и отговорите за учителя се преизчисляват автоматично!</p>
+</section>
+
+<main id="worksheet">
+  <div class="paper-head">
+    <h2 contenteditable="true" spellcheck="false">РАБОТЕН ЛИСТ ПО МАТЕМАТИКА</h2>
+    <p contenteditable="true" spellcheck="false">2. клас</p>
+  </div>
+  <div class="name-row">
+    <span>Име: </span>
+    <span>Дата: </span>
+  </div>
+
+  <!-- Задача 1 -->
+  <div class="task-title">
+    <span contenteditable="true" spellcheck="false">Задача 1. Пресметни!</span>
+    <span class="task-pts" id="task1Pts" contenteditable="true" spellcheck="false">16 т.</span>
+  </div>
+  <div class="exercises" id="exercises"></div>
+
+  <!-- Задача 2 -->
+  <div class="task-title">
+    <span contenteditable="true" spellcheck="false">Задача 2. Намери обиколката на фигурата.</span>
+    <span class="task-pts" id="task2Pts" contenteditable="true" spellcheck="false">4 т.</span>
+  </div>
+  <div class="geometry-container">
+    <div class="geo-diagram" id="geoDiagram"></div>
+    <div class="geo-work grid-bg">
+      <div class="geo-desc" id="geoDesc" contenteditable="true" spellcheck="false"></div>
+      <div class="geo-lines">
+        <span class="box-label">Решение:</span>
+        <div class="work-line"></div>
+        <div class="work-line"></div>
+        <div class="geo-answer-line"><b>Отговор:</b> P = ________ см</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Задача 3 -->
+  <div class="task-title">
+    <span contenteditable="true" spellcheck="false">Задача 3. Прочети и реши текстовата задача!</span>
+    <span class="task-pts" id="task3Pts" contenteditable="true" spellcheck="false">6 т.</span>
+  </div>
+  <div class="problem-box grid-bg" id="wordProblem" contenteditable="true" spellcheck="false"></div>
+  <div class="problem-split">
+    <div class="short-record-box grid-bg">
+      <span class="box-label">Съкратен запис:</span>
+      <div class="work-lines">
+        <div class="work-line"></div>
+        <div class="work-line"></div>
+        <div class="work-line"></div>
+      </div>
+    </div>
+    <div class="solution-box grid-bg">
+      <span class="box-label">Решение:</span>
+      <div class="work-lines">
+        <div class="work-line"></div>
+        <div class="work-line"></div>
+      </div>
+      <div class="answer-line"><b>Отговор:</b> _______________________________</div>
+    </div>
+  </div>
+
+  <!-- Самооценка -->
+  <section class="reflection">
+    <h3>⭐ Как се справих днес?</h3>
+    <p>Отбележи едно:</p>
+    <div class="choices">
+      <span>☐ 😊 Справих се сам/а.</span>
+      <span>☐ 🙂 Справих се с малко помощ.</span>
+      <span>☐ 😐 Имам нужда от още упражнение.</span>
+    </div>
+  </section>
+
+  <!-- Компактна скала за качествено оценяване под рефлексията -->
+  <section class="grading-scale" aria-label="Скала за оценяване">
+    <div class="scale-bands" id="scaleBands"></div>
+    <div class="scale-score">
+      <span>Точки: <span class="score-box"></span> / <span id="maxTotalPts">26</span> т.</span>
+      <span>Оценка: <span class="qual-box"></span></span>
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>Вярвам в себе си! Всеки ден ставам по-добър математик!</span>
+    <span class="author-sign" contenteditable="true" spellcheck="false">Изготвил: Д. Павлова</span>
+  </div>
+</main>
+
+<section id="answerSheet">
+  <h2>ОТГОВОРИ ЗА УЧИТЕЛЯ</h2>
+  <p id="answerLevel"></p>
+  <p id="answerPointsSummary"></p>
+  <p id="answerScaleSummary"></p>
+  <h3>Задача 1:</h3>
+  <ol class="answer-list" id="answerList"></ol>
+  <div class="problem-answer" id="geoAnswer" contenteditable="true" spellcheck="false"></div>
+  <div class="problem-answer" id="problemAnswer" contenteditable="true" spellcheck="false"></div>
+</section>
+
+<script>
+const labels = {
+  regroup100: "Събиране и изваждане до 100 с преминаване",
+  brackets100: "Числови изрази със скоби",
+  unknown100: "Намиране на неизвестно число",
+  mixed2: "Смесени задачи (ляво: със скоби, дясно: без скоби)"
+};
+
+let currentExercises = [];
+let currentGeo = null;
+let currentProblem = null;
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function parsePts(str, fallback = 0) {
+  const m = String(str || "").match(/(\d+(?:[.,]\d+)?)/);
+  if (!m) return fallback;
+  const val = parseFloat(m[1].replace(",", "."));
+  return Number.isFinite(val) ? val : fallback;
+}
+
+function formatNum(n) {
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 10) / 10);
+}
+
+// 1. Генерира събиране или изваждане до 100 с преминаване на десетицата
+function makeRegroup100() {
+  const isAdd = Math.random() < 0.5;
+  let a, b;
+
+  if (isAdd) {
+    while (true) {
+      a = rand(14, 79);
+      b = rand(12, 99 - a);
+      if ((a % 10) + (b % 10) >= 10 && a % 10 !== 0 && b % 10 !== 0) {
+        return { text: `${a} + ${b}`, answer: a + b, isBracket: false, isUnknown: false, stepText: "" };
+      }
+    }
+  } else {
+    while (true) {
+      a = rand(31, 98);
+      b = rand(12, a - 11);
+      if ((a % 10) < (b % 10) && (b % 10) !== 0) {
+        return { text: `${a} − ${b}`, answer: a - b, isBracket: false, isUnknown: false, stepText: "" };
+      }
+    }
+  }
+}
+
+// 2. Генерира числови изрази със скоби в кръга на 100
+function makeBrackets100() {
+  const pattern = rand(1, 4);
+  let a, b, c, text, stepText, answer;
+
+  if (pattern === 1) {
+    while (true) {
+      b = rand(12, 45);
+      c = rand(11, 45);
+      const sum = b + c;
+      if (sum <= 82 && ((b % 10) + (c % 10) >= 10)) {
+        a = rand(sum + 8, 100);
+        text = `${a} − (${b} + ${c})`;
+        stepText = `${a} − ${sum}`;
+        answer = a - sum;
+        break;
+      }
+    }
+  } else if (pattern === 2) {
+    while (true) {
+      b = rand(25, 68);
+      c = rand(12, b - 8);
+      const diff = b - c;
+      a = rand(14, 98 - diff);
+      if (a + diff <= 100) {
+        text = `${a} + (${b} − ${c})`;
+        stepText = `${a} + ${diff}`;
+        answer = a + diff;
+        break;
+      }
+    }
+  } else if (pattern === 3) {
+    while (true) {
+      a = rand(18, 56);
+      b = rand(15, 42);
+      const sum = a + b;
+      if (sum >= 38 && sum <= 99) {
+        c = rand(12, sum - 7);
+        text = `(${a} + ${b}) − ${c}`;
+        stepText = `${sum} − ${c}`;
+        answer = sum - c;
+        break;
+      }
+    }
+  } else {
+    while (true) {
+      b = rand(26, 65);
+      c = rand(11, b - 9);
+      const diff = b - c;
+      a = rand(diff + 12, 100);
+      text = `${a} − (${b} − ${c})`;
+      stepText = `${a} − ${diff}`;
+      answer = a - diff;
+      break;
+    }
+  }
+
+  return { text, answer, isBracket: true, isUnknown: false, stepText };
+}
+
+// 3. Генерира задачи за неизвестно събираемо и неизвестно умаляемо до 100
+function makeUnknown100() {
+  const type = rand(1, 3);
+  let x, a, b, c, text, stepText;
+
+  if (type === 1) {
+    // a + ☐ = c (неизвестно събираемо)
+    a = rand(16, 68);
+    x = rand(14, 98 - a);
+    c = a + x;
+    text = `${a} + ☐ = ${c}`;
+    stepText = `☐ = ${c} − ${a}`;
+  } else if (type === 2) {
+    // ☐ + b = c (неизвестно събираемо)
+    x = rand(16, 68);
+    b = rand(14, 98 - x);
+    c = x + b;
+    text = `☐ + ${b} = ${c}`;
+    stepText = `☐ = ${c} − ${b}`;
+  } else {
+    // ☐ - b = c (неизвестно умаляемо)
+    b = rand(14, 49);
+    c = rand(15, 95 - b);
+    x = b + c;
+    text = `☐ − ${b} = ${c}`;
+    stepText = `☐ = ${c} + ${b}`;
+  }
+
+  return { text, answer: x, isBracket: false, isUnknown: true, stepText };
+}
+
+function buildExercises(count, level) {
+  const list = [];
+  for (let i = 0; i < count; i++) {
+    if (level === "regroup100") {
+      list.push(makeRegroup100());
+    } else if (level === "brackets100") {
+      list.push(makeBrackets100());
+    } else if (level === "unknown100") {
+      list.push(makeUnknown100());
+    } else {
+      list.push(i % 2 === 0 ? makeBrackets100() : makeRegroup100());
+    }
+  }
+  return list;
+}
+
+// 4. Генерира геометрична задача за обиколка
+function makeGeometry(geoChoice) {
+  const shape = geoChoice === "random"
+    ? ["triangle", "rectangle", "square"][rand(0, 2)]
+    : geoChoice;
+
+  if (shape === "triangle") {
+    const a = rand(11, 28);
+    const b = rand(12, 29);
+    const minC = Math.abs(a - b) + 3;
+    const maxC = Math.min(32, a + b - 3);
+    const c = rand(minC, maxC);
+    const P = a + b + c;
+
+    const svg = `
+      <svg width="155" height="102" viewBox="0 0 210 130" aria-label="Триъгълник">
+        <polygon points="35,102 175,102 95,22" fill="#edf4fa" stroke="#315b86" stroke-width="2.4" stroke-linejoin="round"/>
+        <text x="52" y="57" font-size="14" font-weight="bold" fill="#26364a" text-anchor="end">a = ${a} см</text>
+        <text x="142" y="57" font-size="14" font-weight="bold" fill="#26364a" text-anchor="start">b = ${b} см</text>
+        <text x="105" y="122" font-size="14" font-weight="bold" fill="#26364a" text-anchor="middle">c = ${c} см</text>
+      </svg>`;
+
+    return {
+      shapeName: "Триъгълник",
+      desc: `Триъгълник има страни a = ${a} см, b = ${b} см и c = ${c} см. Намери обиколката му.`,
+      svg,
+      calculation: `P = ${a} + ${b} + ${c} = ${P} см`,
+      answer: `${P} см`
+    };
+  }
+
+  if (shape === "rectangle") {
+    const a = rand(14, 28);
+    let b = rand(7, 19);
+    if (a === b) b = a - 4;
+    const P = a + b + a + b;
+
+    const svg = `
+      <svg width="155" height="102" viewBox="0 0 210 130" aria-label="Правоъгълник">
+        <rect x="42" y="26" width="126" height="72" fill="#edf4fa" stroke="#315b86" stroke-width="2.4"/>
+        <text x="105" y="18" font-size="14" font-weight="bold" fill="#26364a" text-anchor="middle">a = ${a} см</text>
+        <text x="105" y="117" font-size="14" font-weight="bold" fill="#26364a" text-anchor="middle">a = ${a} см</text>
+        <text x="173" y="66" font-size="13.5" font-weight="bold" fill="#26364a" text-anchor="start">b=${b}</text>
+        <text x="37" y="66" font-size="13.5" font-weight="bold" fill="#26364a" text-anchor="end">b=${b}</text>
+      </svg>`;
+
+    return {
+      shapeName: "Правоъгълник",
+      desc: `Правоъгълник има дължина a = ${a} см и ширина b = ${b} см. Намери обиколката му.`,
+      svg,
+      calculation: `P = ${a} + ${b} + ${a} + ${b} = ${P} см (или 2 . ${a} + 2 . ${b} = ${P} см)`,
+      answer: `${P} см`
+    };
+  }
+
+  const a = rand(9, 24);
+  const P = a * 4;
+
+  const svg = `
+    <svg width="155" height="102" viewBox="0 0 210 130" aria-label="Квадрат">
+      <rect x="65" y="22" width="80" height="80" fill="#edf4fa" stroke="#315b86" stroke-width="2.4"/>
+      <text x="105" y="15" font-size="14" font-weight="bold" fill="#26364a" text-anchor="middle">a = ${a} см</text>
+      <text x="105" y="120" font-size="14" font-weight="bold" fill="#26364a" text-anchor="middle">a = ${a} см</text>
+      <text x="59" y="66" font-size="14" font-weight="bold" fill="#26364a" text-anchor="end">a=${a}</text>
+      <text x="151" y="66" font-size="14" font-weight="bold" fill="#26364a" text-anchor="start">a=${a}</text>
+    </svg>`;
+
+  return {
+    shapeName: "Квадрат",
+    desc: `Квадрат има страна a = ${a} см. Намери обиколката му.`,
+    svg,
+    calculation: `P = ${a} + ${a} + ${a} + ${a} = ${P} см (или 4 . ${a} = ${P} см)`,
+    answer: `${P} см`
+  };
+}
+
+// 5. Текстови задачи за 2. клас
+const wordTemplates = {
+  school: [
+    () => {
+      const a = rand(24, 42);
+      const diff = rand(9, 17);
+      const b = a - diff;
+      const ans = a + b;
+      return {
+        text: `В училищната библиотека на първия рафт има ${a} книги, а на втория рафт – със ${diff} книги по-малко. Колко книги има общо на двата рафта?`,
+        calculation: `1) ${a} − ${diff} = ${b} (книги на втория рафт);  2) ${a} + ${b} = ${ans} (книги общо)`,
+        answer: `${ans} книги`
+      };
+    },
+    () => {
+      const total = rand(65, 92);
+      const first = rand(18, 34);
+      const second = rand(15, 29);
+      const ans = total - (first + second);
+      return {
+        text: `За украса на класната стая учениците направили ${total} хартиени звездички. Първия ден закачили ${first}, а втория ден – ${second}. Колко звездички са останали?`,
+        calculation: `${total} − (${first} + ${second}) = ${total} − ${first + second} = ${ans} звездички`,
+        answer: `${ans} звездички`
+      };
+    }
+  ],
+  nature: [
+    () => {
+      const a = rand(19, 36);
+      const more = rand(12, 23);
+      const b = a + more;
+      const ans = a + b;
+      return {
+        text: `В парка засадили ${a} брезички и със ${more} повече борчета. Колко дръвчета общо са засадили в парка?`,
+        calculation: `1) ${a} + ${more} = ${b} (борчета);  2) ${a} + ${b} = ${ans} (дръвчета общо)`,
+        answer: `${ans} дръвчета`
+      };
+    },
+    () => {
+      const total = rand(62, 88);
+      const a = rand(19, 32);
+      const b = rand(16, 27);
+      const ans = total - (a + b);
+      return {
+        text: `На една поляна цъфнали ${total} цветя. От тях ${a} били кокичета, ${b} – минзухари, а останалите били теменужки. Колко са теменужките?`,
+        calculation: `${total} − (${a} + ${b}) = ${total} − ${a + b} = ${ans} теменужки`,
+        answer: `${ans} теменужки`
+      };
+    }
+  ],
+  animals: [
+    () => {
+      const a = rand(26, 44);
+      const diff = rand(8, 16);
+      const b = a - diff;
+      const ans = a + b;
+      return {
+        text: `В една ферма има ${a} овце и със ${diff} по-малко кози. Колко са общо овцете и козите във фермата?`,
+        calculation: `1) ${a} − ${diff} = ${b} (кози);  2) ${a} + ${b} = ${ans} (общо)`,
+        answer: `${ans} животни`
+      };
+    },
+    () => {
+      const start = rand(45, 68);
+      const flewAway = rand(17, 29);
+      const came = rand(14, 26);
+      const ans = (start - flewAway) + came;
+      return {
+        text: `В гората на едно дърво кацнали ${start} птички. Отлетели ${flewAway} птички, а след това долетели още ${came}. Колко птички има на дървото сега?`,
+        calculation: `(${start} − ${flewAway}) + ${came} = ${start - flewAway} + ${came} = ${ans} птички`,
+        answer: `${ans} птички`
+      };
+    }
+  ],
+  sport: [
+    () => {
+      const a = rand(18, 35);
+      const more = rand(9, 18);
+      const b = a + more;
+      const ans = a + b;
+      return {
+        text: `В спортен турнир участвали ${a} момичета и със ${more} повече момчета. Колко деца общо са участвали в турнира?`,
+        calculation: `1) ${a} + ${more} = ${b} (момчета);  2) ${a} + ${b} = ${ans} (деца общо)`,
+        answer: `${ans} деца`
+      };
+    },
+    () => {
+      const total = rand(60, 90);
+      const first = rand(19, 34);
+      const second = rand(16, 28);
+      const ans = total - (first + second);
+      return {
+        text: `Баскетболен отбор отбелязал общо ${total} точки в три срещи. В първата среща отбелязал ${first} точки, а във втората – ${second} точки. Колко точки е отбелязал отборът в третата среща?`,
+        calculation: `${total} − (${first} + ${second}) = ${total} − ${first + second} = ${ans} точки`,
+        answer: `${ans} точки`
+      };
+    }
+  ],
+  fruit: [
+    () => {
+      const total = rand(64, 94);
+      const a = rand(19, 35);
+      const b = rand(15, 29);
+      const ans = total - (a + b);
+      return {
+        text: `В плод-зеленчук докарали ${total} кг плодове. Сутринта продали ${a} кг ябълки, а следобед – ${b} кг круши. Колко килограма плодове са останали?`,
+        calculation: `${total} − (${a} + ${b}) = ${total} − ${a + b} = ${ans} кг`,
+        answer: `${ans} кг`
+      };
+    },
+    () => {
+      const a = rand(23, 45);
+      const diff = rand(8, 16);
+      const b = a - diff;
+      const ans = a + b;
+      return {
+        text: `В една щайга има ${a} праскови, а във втората – със ${diff} праскови по-малко. Колко праскови има общо в двете щайги?`,
+        calculation: `1) ${a} − ${diff} = ${b} (във втората щайга);  2) ${a} + ${b} = ${ans} (общо)`,
+        answer: `${ans} праскови`
+      };
+    }
+  ]
+};
+
+function makeProblem(themeChoice) {
+  const keys = Object.keys(wordTemplates);
+  const selectedTheme = themeChoice === "mixed" ? keys[rand(0, keys.length - 1)] : themeChoice;
+  const list = wordTemplates[selectedTheme] || wordTemplates.school;
+  return list[rand(0, list.length - 1)]();
+}
+
+function buildEquationStep(left, right) {
+  const cleanLeft = left.replace(/\s+/g, " ").trim();
+  const cleanRight = right.replace(/\s+/g, " ").trim();
+
+  // a + U = c  =>  ☐ = c - a
+  let m = cleanLeft.match(/^(\d+)\s*\+\s*U$/);
+  if (m) return `☐ = ${cleanRight} − ${m[1]}`;
+
+  // U + b = c  =>  ☐ = c - b
+  m = cleanLeft.match(/^U\s*\+\s*(\d+)$/);
+  if (m) return `☐ = ${cleanRight} − ${m[1]}`;
+
+  // U - b = c  =>  ☐ = c + b
+  m = cleanLeft.match(/^U\s*-\s*(\d+)$/);
+  if (m) return `☐ = ${cleanRight} + ${m[1]}`;
+
+  return "";
+}
+
+function solveEquation(eqStr) {
+  const clean = eqStr
+    .replace(/−/g, "-")
+    .replace(/–/g, "-")
+    .replace(/[☐□?xх_]/gi, "U")
+    .trim();
+
+  const parts = clean.split("=");
+  if (parts.length !== 2) return null;
+
+  const left = parts[0].trim();
+  const right = parts[1].trim();
+  const hasULeft = left.includes("U");
+  const hasURight = right.includes("U");
+  if (hasULeft === hasURight) return null;
+
+  const evalNum = (expr) => {
+    if (!/^[0-9+\-*/().\s]+$/.test(expr)) return NaN;
+    const v = Function('"use strict";return (' + expr + ')')();
+    return typeof v === "number" && Number.isFinite(v) ? v : NaN;
+  };
+
+  const stepText = hasULeft ? buildEquationStep(left, right) : "";
+
+  if (hasULeft) {
+    const rhs = evalNum(right);
+    if (!Number.isFinite(rhs)) return null;
+    for (let cand = -1000; cand <= 1000; cand++) {
+      const lhsExpr = left.replace(/U/g, `(${cand})`);
+      const lhs = evalNum(lhsExpr);
+      if (Number.isFinite(lhs) && Math.abs(lhs - rhs) < 1e-9) {
+        return { answer: cand, isUnknown: true, stepText };
+      }
+    }
+    return { answer: "?", isUnknown: true, stepText };
+  } else {
+    const lhs = evalNum(left);
+    if (!Number.isFinite(lhs)) return null;
+    for (let cand = -1000; cand <= 1000; cand++) {
+      const rhsExpr = right.replace(/U/g, `(${cand})`);
+      const rhs = evalNum(rhsExpr);
+      if (Number.isFinite(rhs) && Math.abs(lhs - rhs) < 1e-9) {
+        return { answer: cand, isUnknown: true, stepText };
+      }
+    }
+    return { answer: "?", isUnknown: true, stepText };
+  }
+}
+
+function evaluateDetails(rawText) {
+  if (/[☐□?xх]/i.test(rawText) || rawText.includes("=")) {
+    const eqSol = solveEquation(rawText);
+    if (eqSol) return eqSol;
+  }
+
+  const normalized = rawText
+    .replace(/−/g, "-")
+    .replace(/–/g, "-")
+    .replace(/×/g, "*")
+    .replace(/·/g, "*")
+    .replace(/:/g, "/")
+    .replace(/[^0-9+\-*/().\s]/g, "")
+    .trim();
+
+  if (!normalized) return { answer: "?", isUnknown: false, stepText: "" };
+
+  try {
+    if (/^[0-9+\-*/().\s]+$/.test(normalized)) {
+      let stepText = "";
+      if (normalized.includes("(") && normalized.includes(")")) {
+        stepText = normalized.replace(/\(([^()]+)\)/g, (_, inner) => {
+          const innerVal = Function('"use strict";return (' + inner + ')')();
+          return (typeof innerVal === "number" && Number.isFinite(innerVal)) ? innerVal : `(${inner})`;
+        }).replace(/-/g, "−");
+      }
+      const res = Function('"use strict";return (' + normalized + ')')();
+      if (typeof res === "number" && Number.isFinite(res)) {
+        const finalVal = Number.isInteger(res) ? res : Math.round(res * 100) / 100;
+        return { answer: finalVal, isUnknown: false, stepText };
+      }
+    }
+  } catch (e) {}
+  return { answer: "?", isUnknown: false, stepText: "" };
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function updateGradingScale(maxPts) {
+  const safeMax = Math.max(1, maxPts);
+  const q1Min = Math.ceil(safeMax * 0.9);
+  const q2Min = Math.ceil(safeMax * 0.75);
+  const q3Min = Math.ceil(safeMax * 0.55);
+  const q4Min = Math.ceil(safeMax * 0.35);
+
+  const r1 = q1Min >= safeMax ? `${safeMax}` : `${q1Min}–${safeMax}`;
+  const t2 = Math.max(q2Min, q1Min - 1);
+  const r2 = q2Min === t2 ? `${q2Min}` : `${q2Min}–${t2}`;
+  const t3 = Math.max(q3Min, q2Min - 1);
+  const r3 = q3Min === t3 ? `${q3Min}` : `${q3Min}–${t3}`;
+  const t4 = Math.max(q4Min, q3Min - 1);
+  const r4 = q4Min === t4 ? `${q4Min}` : `${q4Min}–${t4}`;
+  const t5 = Math.max(0, q4Min - 1);
+  const r5 = t5 <= 0 ? `0` : `0–${t5}`;
+
+  document.getElementById("scaleBands").innerHTML = `
+    <span><b>Отлично:</b> ${r1} т.</span>
+    <span><b>Много добро:</b> ${r2} т.</span>
+    <span><b>Добро:</b> ${r3} т.</span>
+    <span><b>Задоволително:</b> ${r4} т.</span>
+    <span><b>Нужда от подкрепа:</b> ${r5} т.</span>
+  `;
+  document.getElementById("maxTotalPts").textContent = formatNum(safeMax);
+  document.getElementById("answerScaleSummary").innerHTML =
+    `<b>Качествена скала:</b> Отлично (${r1} т.), Много добро (${r2} т.), Добро (${r3} т.), Задоволително (${r4} т.), Нужда от подкрепа (${r5} т.).`;
+}
+
+function syncPoints(recalcTask1Total = false) {
+  const itemEls = document.querySelectorAll(".item-pts");
+  let sum1 = 0;
+  itemEls.forEach((el, idx) => {
+    const fallback = currentExercises[idx] ? currentExercises[idx].pts : 2;
+    const val = parsePts(el.textContent, fallback);
+    if (currentExercises[idx]) currentExercises[idx].pts = val;
+    sum1 += val;
+  });
+
+  const task1El = document.getElementById("task1Pts");
+  if (recalcTask1Total) {
+    task1El.textContent = `${formatNum(sum1)} т.`;
+  }
+
+  const t1 = recalcTask1Total ? sum1 : parsePts(task1El.textContent, sum1);
+  const t2 = parsePts(document.getElementById("task2Pts").textContent, 4);
+  const t3 = parsePts(document.getElementById("task3Pts").textContent, 6);
+  const total = t1 + t2 + t3;
+
+  updateGradingScale(total);
+  document.getElementById("answerPointsSummary").innerHTML =
+    `<b>Максимален брой точки:</b> ${formatNum(total)} т. (Задача 1: ${formatNum(t1)} т., Задача 2: ${formatNum(t2)} т., Задача 3: ${formatNum(t3)} т.)`;
+}
+
+function updateAnswerSheetList() {
+  const listEl = document.getElementById("answerList");
+  listEl.innerHTML = currentExercises.map(e => {
+    const ptsLabel = ` <small>(${formatNum(e.pts)} т.)</small>`;
+    if (e.isUnknown) {
+      const stepPart = e.stepText ? `${escapeHtml(e.stepText)} → ` : "";
+      return `<li>${escapeHtml(e.text)} | ${stepPart}<b>☐ = ${e.answer}</b>${ptsLabel}</li>`;
+    }
+    const stepPart = (e.isBracket && e.stepText) ? ` = ${escapeHtml(e.stepText)}` : "";
+    return `<li>${escapeHtml(e.text)}${stepPart} = <b>${e.answer}</b>${ptsLabel}</li>`;
+  }).join("");
+}
+
+function generate() {
+  const count = Number(document.getElementById("count").value);
+  const ptsPerEx = Number(document.getElementById("ptsPerEx").value);
+  const level = document.getElementById("level").value;
+  const geoChoice = document.getElementById("geoType").value;
+  const themeChoice = document.getElementById("theme").value;
+
+  // Задача 1
+  currentExercises = buildExercises(count, level).map(ex => ({ ...ex, pts: ptsPerEx }));
+  const grid = document.getElementById("exercises");
+  grid.innerHTML = "";
+
+  currentExercises.forEach((e, idx) => {
+    const cell = document.createElement("div");
+    let cellClass = "exercise grid-bg";
+    if (e.isBracket) cellClass += " bracket-exercise";
+    else if (e.isUnknown) cellClass += " unknown-exercise";
+    cell.className = cellClass;
+
+    const ptsBadge = document.createElement("span");
+    ptsBadge.className = "item-pts";
+    ptsBadge.contentEditable = "true";
+    ptsBadge.spellcheck = false;
+    ptsBadge.textContent = `${formatNum(e.pts)} т.`;
+    ptsBadge.title = "Точки за примера (кликни за промяна)";
+
+    ptsBadge.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        ptsBadge.blur();
+      }
+    });
+
+    ptsBadge.addEventListener("input", () => {
+      const val = parsePts(ptsBadge.textContent, 0);
+      currentExercises[idx].pts = val;
+      syncPoints(true);
+      updateAnswerSheetList();
+    });
+
+    const exprSpan = document.createElement("span");
+    exprSpan.className = e.isUnknown ? "expr-edit unknown-expr" : "expr-edit";
+    exprSpan.contentEditable = "true";
+    exprSpan.spellcheck = false;
+    exprSpan.textContent = e.text;
+    exprSpan.title = "Кликни, за да редактираш задачата ръчно";
+
+    exprSpan.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        exprSpan.blur();
+      }
+    });
+
+    exprSpan.addEventListener("input", () => {
+      const newText = exprSpan.textContent.trim();
+      const details = evaluateDetails(newText);
+      currentExercises[idx].text = newText;
+      currentExercises[idx].answer = details.answer;
+      currentExercises[idx].isUnknown = details.isUnknown;
+      currentExercises[idx].stepText = details.stepText;
+      updateAnswerSheetList();
+    });
+
+    if (e.isBracket) {
+      const topRow = document.createElement("div");
+      topRow.className = "bracket-top";
+      topRow.appendChild(exprSpan);
+
+      const step1Row = document.createElement("div");
+      step1Row.className = "bracket-step1";
+      step1Row.innerHTML = `<span>=</span><span class="step-line"></span>`;
+
+      const step2Row = document.createElement("div");
+      step2Row.className = "bracket-step2";
+      step2Row.innerHTML = `<span>=</span><span class="answer-box"></span>`;
+
+      cell.appendChild(ptsBadge);
+      cell.appendChild(topRow);
+      cell.appendChild(step1Row);
+      cell.appendChild(step2Row);
+    } else if (e.isUnknown) {
+      const topRow = document.createElement("div");
+      topRow.className = "bracket-top";
+      topRow.appendChild(exprSpan);
+
+      const step1Row = document.createElement("div");
+      step1Row.className = "bracket-step1";
+      step1Row.innerHTML = `<span>☐ =</span><span class="step-line"></span>`;
+
+      const step2Row = document.createElement("div");
+      step2Row.className = "bracket-step2";
+      step2Row.innerHTML = `<span>☐ =</span><span class="answer-box"></span>`;
+
+      cell.appendChild(ptsBadge);
+      cell.appendChild(topRow);
+      cell.appendChild(step1Row);
+      cell.appendChild(step2Row);
+    } else {
+      const eqText = document.createTextNode(" = ");
+      const box = document.createElement("span");
+      box.className = "answer-box";
+
+      cell.appendChild(ptsBadge);
+      cell.appendChild(exprSpan);
+      cell.appendChild(eqText);
+      cell.appendChild(box);
+    }
+
+    grid.appendChild(cell);
+  });
+
+  // Задача 2 (Обиколка)
+  currentGeo = makeGeometry(geoChoice);
+  document.getElementById("geoDiagram").innerHTML = currentGeo.svg;
+  document.getElementById("geoDesc").textContent = currentGeo.desc;
+
+  // Задача 3 (Текстова задача)
+  currentProblem = makeProblem(themeChoice);
+  document.getElementById("wordProblem").textContent = currentProblem.text;
+
+  // Отговори за учителя
+  document.getElementById("answerLevel").textContent = "Вид упражнения: " + labels[level];
+  updateAnswerSheetList();
+
+  document.getElementById("geoAnswer").innerHTML =
+    `<b>Задача 2 (${currentGeo.shapeName}):</b> ${currentGeo.calculation}<br><b>Отговор:</b> P = ${currentGeo.answer}`;
+
+  document.getElementById("problemAnswer").innerHTML =
+    `<b>Задача 3 (Текстова задача):</b> ${currentProblem.calculation}<br><b>Отговор:</b> ${currentProblem.answer}`;
+
+  document.getElementById("answerSheet").style.display = "none";
+  syncPoints(true);
+  applyGridStyle();
+}
+
+["task1Pts", "task2Pts", "task3Pts"].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      el.blur();
+    }
+  });
+  el.addEventListener("input", () => {
+    syncPoints(false);
+  });
+});
+
+document.getElementById("ptsPerEx").addEventListener("change", () => {
+  const val = Number(document.getElementById("ptsPerEx").value);
+  currentExercises.forEach((ex, idx) => {
+    ex.pts = val;
+    const badge = document.querySelectorAll(".item-pts")[idx];
+    if (badge) badge.textContent = `${formatNum(val)} т.`;
+  });
+  syncPoints(true);
+  updateAnswerSheetList();
+});
+
+function applyGridStyle() {
+  const isLarge = document.getElementById("style").value === "large";
+  document.documentElement.style.setProperty("--grid-size", isLarge ? "25px" : "18px");
+}
+
+document.getElementById("style").addEventListener("change", applyGridStyle);
+
+function toggleAnswers() {
+  const s = document.getElementById("answerSheet");
+  s.style.display = s.style.display === "block" ? "none" : "block";
+}
+
+function printWorksheet() {
+  document.getElementById("answerSheet").style.display = "none";
+  window.print();
+}
+
+function printAll() {
+  document.getElementById("answerSheet").style.display = "block";
+  window.print();
+}
+
+generate();
+</script>
+</body>
+</html>
